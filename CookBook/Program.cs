@@ -1,3 +1,11 @@
+using CookBook.Services;
+using CookBook.UI;
+using DataAccessLayer.Contracts;
+using DataAccessLayer.Repositories;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Configuration;
+
 namespace CookBook
 {
     internal static class Program
@@ -8,10 +16,39 @@ namespace CookBook
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+
+            ServiceCollection services = ConfigureServices();
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+            var startForm = serviceProvider.GetRequiredService<HomeForm>();
+            Application.Run(startForm);
         }
+
+        static ServiceCollection ConfigureServices()
+        {
+            ServiceCollection services = new ServiceCollection();
+
+                services.AddTransient<IIngredientsRepository>(_ => new IngredientsRepository());
+            services.AddTransient<IRecipeTypesRepository>(_ => new RecipeTypesRepository());
+            services.AddTransient<IRecipesRepository>(_ => new RecipesRepository());
+            services.AddTransient<IRecipeIngredientsRepository>(_ => new RecipeIngredientsRepository());
+
+
+            services.AddTransient<IngredientsForm>();
+            services.AddTransient<RecipesForm>();
+            services.AddTransient<RecipeTypesForm>();
+            services.AddTransient<RecipeIngredientsForm>();
+            services.AddTransient<AmountForm>();
+            services.AddTransient<FoodManagerForm>();
+            services.AddTransient<HomeForm>();
+
+            services.AddTransient<FoodManagerCache>();
+            services.AddSingleton(DesktopFileWatcher.Instance);
+
+            return services;
+
+        }
+
     }
 }
